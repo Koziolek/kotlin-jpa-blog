@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component
 import java.util.*
 import javax.persistence.*
 import javax.persistence.criteria.Path
-import javax.persistence.criteria.Root
 
 @SpringBootApplication
 open class Jva014BlogApplication {
@@ -19,7 +18,7 @@ open class Jva014BlogApplication {
     @Bean
     open fun init(repo: BlogRepository) = org.springframework.boot.CommandLineRunner {
         repo.save(
-                Blog("My blog", "Ja", ArrayList<BlogPost>())
+                Blog("My blog", Author("Ja"), ArrayList<BlogPost>())
         )
     }
 }
@@ -32,7 +31,30 @@ fun main(args: Array<String>) {
 class DomainObject(
         @Id var id: UUID = UUID.randomUUID(),
         @Version var version: Int = 0
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other?.javaClass != javaClass) return false
+
+        other as DomainObject
+
+        if (id != other.id) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+}
+
+@Entity
+@AttributeOverrides(
+        AttributeOverride(name = "id", column = Column(name = "AUTHOR_ID")),
+        AttributeOverride(name = "version", column = Column(name = "AUTHOR_VERSION"))
 )
+@Table(name = "AUTHOR")
+class Author(var name: String = "") : DomainObject()
 
 @Entity
 @NamedQuery(name = "findAll", query = "select B from Blog B order by B.name")
@@ -46,8 +68,9 @@ class Blog(
         @Column(name = "BLOG_NAME")
         var name: String = "",
 
-        @Column(name = "BLOG_AUTHOR")
-        var author: String = " ",
+        @JoinColumn(name = "BLOG_AUTHOR")
+        @OneToOne(cascade = arrayOf(CascadeType.ALL))
+        var author: Author? = null,
 
         @OneToMany(mappedBy = "blog", fetch = FetchType.EAGER, cascade = arrayOf(CascadeType.ALL))
         var posts: MutableList<BlogPost> = ArrayList<BlogPost>()
@@ -90,15 +113,16 @@ interface BlogPostRepository : JpaRepository<BlogPost, UUID>, JpaSpecificationEx
 @Component
 class BlogPostService(val blogPostRepo: BlogPostRepository) {
 
-    fun findBlogPostsByBlogId(id:UUID){
+    fun findBlogPostsByBlogId(id: UUID) {
         blogPostRepo.findAll(findBlogPostByBlogId(id))
     }
 }
 
-fun findBlogPostByBlogId(id:UUID): Specification<BlogPost> {
-   return Specification<BlogPost> { root, cq, cb ->
-       val path: Path<String> = root.get("id")
-       cb.equal(path, id) }
+fun findBlogPostByBlogId(id: UUID): Specification<BlogPost> {
+    return Specification<BlogPost> { root, cq, cb ->
+        val path: Path<String> = root.get("id")
+        cb.equal(path, id)
+    }
 }
 
 
