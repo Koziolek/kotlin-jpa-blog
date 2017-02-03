@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.rest.core.annotation.RepositoryRestResource
+import org.springframework.stereotype.Component
 import java.util.*
 import javax.persistence.*
 import javax.persistence.criteria.Path
@@ -49,10 +50,8 @@ class Blog(
         var author: String = " ",
 
         @OneToMany(mappedBy = "blog", fetch = FetchType.EAGER, cascade = arrayOf(CascadeType.ALL))
-        var posts: List<BlogPost> = ArrayList<BlogPost>()
-) : DomainObject() {
-
-}
+        var posts: MutableList<BlogPost> = ArrayList<BlogPost>()
+) : DomainObject()
 
 @Entity
 @NamedQuery(name = "findByBlog", query = "select P from BlogPost P where P.blog.id = :id")
@@ -87,6 +86,14 @@ interface BlogRepository : JpaRepository<Blog, UUID>
         path = "blogPost"
 )
 interface BlogPostRepository : JpaRepository<BlogPost, UUID>, JpaSpecificationExecutor<BlogPost>
+
+@Component
+class BlogPostService(val blogPostRepo: BlogPostRepository) {
+
+    fun findBlogPostsByBlogId(id:UUID){
+        blogPostRepo.findAll(findBlogPostByBlogId(id))
+    }
+}
 
 fun findBlogPostByBlogId(id:UUID): Specification<BlogPost> {
    return Specification<BlogPost> { root, cq, cb ->
