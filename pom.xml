@@ -133,6 +133,7 @@
                     </compilerPlugins>
                     <pluginOptions>
                         <option>all-open:annotation=javax.persistence.MappedSuperclass</option>
+                        <option>all-open:annotation=javax.persistence.Entity</option>
                     </pluginOptions>
                 </configuration>
                 <executions>
@@ -157,11 +158,6 @@
                         <artifactId>kotlin-maven-allopen</artifactId>
                         <version>${kotlin.version}</version>
                     </dependency>
-                    <!--<dependency>-->
-                    <!--<groupId>org.jetbrains.kotlin</groupId>-->
-                    <!--<artifactId>kotlin-annotation-processing</artifactId>-->
-                    <!--<version>${kotlin.version}</version>-->
-                    <!--</dependency>-->
                 </dependencies>
             </plugin>
         </plugins>

@@ -1,4 +1,4 @@
-package com.luxoft.jva014.blog
+package pl.koziolekweb.blog
 
 import org.junit.Test
 import org.junit.runner.RunWith

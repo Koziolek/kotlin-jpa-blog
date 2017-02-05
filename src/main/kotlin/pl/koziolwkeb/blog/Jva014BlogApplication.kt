@@ -1,4 +1,4 @@
-package com.luxoft.jva014.blog
+package pl.koziolwkeb.blog
 
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -17,9 +17,11 @@ open class Jva014BlogApplication {
 
     @Bean
     open fun init(repo: BlogRepository) = org.springframework.boot.CommandLineRunner {
-        repo.save(
+        val blog = repo.save(
                 Blog("My blog", Author("Ja"), ArrayList<BlogPost>())
         )
+
+        repo.findAll().forEach{b -> print(b)}
     }
 }
 
@@ -66,11 +68,11 @@ class Author(var name: String = "") : DomainObject()
 class Blog(
 
         @Column(name = "BLOG_NAME")
-        var name: String = "",
+        val name: String = "",
 
         @JoinColumn(name = "BLOG_AUTHOR")
         @OneToOne(cascade = arrayOf(CascadeType.ALL))
-        var author: Author? = null,
+        var author: Author = Author(),
 
         @OneToMany(mappedBy = "blog", fetch = FetchType.EAGER, cascade = arrayOf(CascadeType.ALL))
         var posts: MutableList<BlogPost> = ArrayList<BlogPost>()
